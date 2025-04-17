@@ -205,20 +205,19 @@ function Set-LocalADUserAttributes {
             # Dieser Wert wird normalerweise von AAD Connect verwendet, um den lokalen Benutzer mit dem Azure AD Benutzer zu verknüpfen.
             # Das Skript SETZT diesen Wert NICHT in Azure AD.
             $immutableID = [System.Convert]::ToBase64String($localADUser.ObjectGUID.ToByteArray())
-            Write-Host "  Local AD user '$($localADUser.SamAccountName)' processed. Calculated ImmutableID: $immutableID" -ForegroundColor Green
-            Write-Host "  NOTE: ImmutableID is calculated but NOT set in Azure AD by this script." -ForegroundColor Yellow
+            # Write-Host "  Local AD user '$($localADUser.SamAccountName)' processed. Calculated ImmutableID: $immutableID" -ForegroundColor Green
+            # Write-Host "  NOTE: ImmutableID is calculated but NOT set in Azure AD by this script." -ForegroundColor Yellow
 
             # === WARNUNG: ImmutableID in Azure AD setzen ===
             # Das Setzen der ImmutableID sollte nur in spezifischen Szenarien erfolgen (z.B. Konvertierung Cloud->Synced, Reparatur).
             # Führen Sie dies NICHT bei regulär synchronisierten Benutzern aus, da dies die Synchronisierung stören kann!
-            # Beispiel (AUSKOMMENTIERT):
-            # try {
+             try {
             #    Write-Host "  Attempting to set ImmutableID in Azure AD (USE WITH EXTREME CAUTION)..."
-            #    Set-AzureADUser -ObjectId $AzureADUser.ObjectId -ImmutableId $immutableID
-            #    Write-Host "    Successfully set ImmutableID in Azure AD for $($AzureADUser.UserPrincipalName)." -ForegroundColor Green
-            # } catch {
-            #    Write-Warning "    FAILED to set ImmutableID in Azure AD for $($AzureADUser.UserPrincipalName): $($_.Exception.Message)"
-            # }
+                Set-AzureADUser -ObjectId $AzureADUser.ObjectId -ImmutableId $immutableID
+                Write-Host "    Successfully set ImmutableID in Azure AD for $($AzureADUser.UserPrincipalName)." -ForegroundColor Green
+             } catch {
+                Write-Warning "    FAILED to set ImmutableID in Azure AD for $($AzureADUser.UserPrincipalName): $($_.Exception.Message)"
+             }
             # === ENDE WARNUNG ===
 
             return $true # Indicate success
