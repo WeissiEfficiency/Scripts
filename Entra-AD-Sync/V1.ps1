@@ -192,9 +192,9 @@ function Set-LocalADUserAndAzureImmutableId {
             $immutableIdValue = [System.Convert]::ToBase64String($localUser.ObjectGUID.ToByteArray())
             Write-Host "  Calculated ImmutableID from local ObjectGUID: $immutableIdValue" -ForegroundColor Cyan
             
-            Write-Host "  Attempting to set ImmutableID on AZURE AD User '$($AzureUser.UserPrincipalName)'..." -ForegroundColor Yellow
-            Write-Host "  ---> WARNING <--- This permanently links the Azure AD user to the local AD user using this value." -ForegroundColor Yellow
-            Write-Host "  ---> WARNING <--- Do NOT do this for users already correctly synchronized by Azure AD Connect!" -ForegroundColor Yellow
+        #    Write-Host "  Attempting to set ImmutableID on AZURE AD User '$($AzureUser.UserPrincipalName)'..." -ForegroundColor Yellow
+        #   Write-Host "  ---> WARNING <--- This permanently links the Azure AD user to the local AD user using this value." -ForegroundColor Yellow
+        #   Write-Host "  ---> WARNING <--- Do NOT do this for users already correctly synchronized by Azure AD Connect!" -ForegroundColor Yellow
             
             # Using the older AzureAD module command
             Set-AzureADUser -ObjectId $AzureUser.ObjectId -ImmutableId $immutableIdValue -ErrorAction Stop
@@ -229,7 +229,7 @@ function Set-LocalADUserAndAzureImmutableId {
 
 #Region Main Script Execution
 
-# Check Azure AD connection
+<# Check Azure AD connection
 try {
     $azureADConnection = Get-AzureADCurrentSessionInfo -ErrorAction Stop
     Write-Host "Successfully connected to Azure AD tenant: $($azureADConnection.TenantId) ($($azureADConnection.TenantDomain))" -ForegroundColor Green
@@ -237,12 +237,14 @@ try {
     Write-Error "Not connected to Azure AD. Please run Connect-AzureAD first."
     exit 1 # Use non-zero exit code for errors
 }
+#>
 
-# Check if the CSV file exists
+<# Check if the CSV file exists
 if (-not (Test-Path -Path $CsvPath -PathType Leaf)) { # Leaf ensures it's a file, not a directory
     Write-Error "The specified CSV file was not found or is not a file: $CsvPath"
     exit 1
 }
+#>
 
 # Import the CSV file
 try {
@@ -276,19 +278,21 @@ $failureCount = 0
 $processedCount = 0
 
 # Start processing users
+<#
 Write-Host "`nStarting synchronization and ImmutableID set process..." -ForegroundColor Yellow
 Write-Host "*** WARNING: This script will attempt to SET the ImmutableID in Azure AD for matched users. Review code and understand implications! ***" -ForegroundColor Red
 Read-Host -Prompt "Press Enter to continue, or CTRL+C to abort"
+#>
 
 $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
 foreach ($csvUserRecord in $csvUsers) {
     $processedCount++
-    $upn = $csvUserRecord.UserPrincipalName.Trim() # Trim whitespace from UPN
-    $countryName = $csvUserRecord.Country.Trim()       # Trim whitespace from Country
+    $upn = $csvUserRecord.UserPrincipalName#.Trim() # Trim whitespace from UPN
+    $countryName = $csvUserRecord.Country#.Trim()       # Trim whitespace from Country
     
-    Write-Host "------------------------------------------------------"
-    Write-Host "Processing user $processedCount/$userCount : $upn" -ForegroundColor Yellow
+#    Write-Host "------------------------------------------------------"
+#    Write-Host "Processing user $processedCount/$userCount : $upn" -ForegroundColor Yellow
 
     # Basic validation for the current record
     if (-not $upn -or -not $countryName) {
@@ -301,10 +305,10 @@ foreach ($csvUserRecord in $csvUsers) {
     $azureADUser = Get-AzureAdUserInfoForSync -UserPrincipalName $upn
     
     if ($azureADUser) {
-        # 2. Optional: Retrieve Azure AD Manager info & Export User/Manager to XML
+        #Retrieve Azure AD Manager info & Export User/Manager to XML
         $azureADManager = Export-UserAndManagerInfoToXml -AzureUser $azureADUser -OutputPath $xmlOutputPath
         
-        # 3. Update Local AD User Attributes AND Set ImmutableId in Azure AD
+        #Update Local AD User Attributes AND Set ImmutableId in Azure AD
         $updateResult = Set-LocalADUserAndAzureImmutableId -AzureUser $azureADUser -AzureManager $azureADManager -CsvCountry $countryName
         
         if ($updateResult) {
@@ -321,6 +325,7 @@ foreach ($csvUserRecord in $csvUsers) {
     }
 } # End foreach user loop
 
+<#
 $stopwatch.Stop()
 Write-Host "------------------------------------------------------"
 Write-Host "`nProcess complete." -ForegroundColor Green
@@ -330,6 +335,7 @@ if ($failureCount -gt 0) {
     Write-Host "Failed/Skipped records: $failureCount" -ForegroundColor Red
     Write-Host "Check warnings and errors logged above for details." -ForegroundColor Red
 }
+#>
 
 # Optional: Start Azure AD Connect Delta Sync cycle
 # Note: After manually setting ImmutableIDs, a Full Sync (Initial) might be more appropriate 
