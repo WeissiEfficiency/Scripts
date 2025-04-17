@@ -31,7 +31,7 @@
     Created on: April 17, 2024 (Updated April 17, 2025)
 #>
 
-#Requires -Modules ActiveDirectory, AzureAD
+#Requires -Modules ActiveDirectory, AzureAD, RSAT Tools
 
 param(
     [Parameter(Mandatory=$true)]
