@@ -17,7 +17,7 @@
       - Modules: AzureAD and ActiveDirectory must be installed and connected.
       - The script must be run as administrator.
 .AUTHOR
-    Your Name, April 17, 2025
+    Stefan Weiß, April 17, 2025
 #>
 
 #region Parameters & CSV Import
