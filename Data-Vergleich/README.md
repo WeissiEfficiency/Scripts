@@ -32,3 +32,24 @@ Ohne Parameter fragt das Script die Pfade ab. Falls Scripts blockiert sind:
 
 Hinweis: Dateien im Papierkorb belegen weiter Speicherplatz, bis der Papierkorb geleert wird.
 Details zum Ablauf: siehe [PLAN.md](PLAN.md).
+
+## Version 2 (`Compare-And-Remove-Duplicates-v2.ps1`)
+
+Gleicher Ablauf wie Version 1, aber mit expliziter Hash-Prüfung beider Dateien:
+
+- Der SHA256 wird für **beide** Dateien gebildet (Zieldatei und Vergleichsdatei) und direkt miteinander
+  verglichen. Der Vergleichs-Report enthält beide Werte: `SHA256_Ziel`, `SHA256_Referenz`, `HashGleich`,
+  dazu `GroesseZiel` / `GroesseReferenz`.
+- **Unmittelbar vor jeder Löschung** werden beide Dateien erneut gehasht. Nur wenn beide frischen Hashes
+  identisch sind (und zum Scan passen), wird gelöscht. Sonst: übersprungen + Eintrag im Lösch-Log.
+- Das Lösch-Log enthält ebenfalls beide Hashes je Datei.
+- Gibt es mehrere identische Vergleichsdateien, wird bevorzugt die mit gleichem Dateinamen als Gegenstück genommen.
+- Logs heißen `Vergleich_v2_<Zeit>.csv` / `Loeschung_v2_<Zeit>.csv`.
+
+Zusätzlicher Parameter: `-SkipRehash` schaltet das erneute Hashen vor dem Löschen ab (schneller, aber weniger sicher).
+Hinweis: Durch das erneute Hashen werden beide Dateien vor dem Löschen noch einmal komplett gelesen –
+bei 10 GB pro Paket also ca. 20 GB Lesezugriff.
+
+```powershell
+.\Compare-And-Remove-Duplicates-v2.ps1 -ReferenceFolder "E:\OpenCloud" -TargetFolder "F:\Daten" -DryRun
+```

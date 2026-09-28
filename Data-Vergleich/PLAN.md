@@ -41,4 +41,6 @@ Script: `Compare-And-Remove-Duplicates.ps1`
 4. [x] Paket-Löschung mit 10-GB-Grenze, CONTINUE, Fehler-Stopp
 5. [x] Leere Ordner entfernen
 6. [x] Test mit Testdaten (DryRun, Abbruch, falsche Bestätigung, Paketgrenze, verschachtelte Ordner)
-7. [ ] Test auf Windows mit echten Daten – erst `-DryRun`, dann kleiner Teilordner
+7. [x] DryRun auf Windows mit echten Daten (v1)
+8. [x] v2: SHA256 beider Dateien explizit vergleichen + erneute Hash-Prüfung direkt vor dem Löschen
+9. [ ] v2 auf Windows testen – erst `-DryRun`, dann kleiner Teilordner
