@@ -53,3 +53,33 @@ bei 10 GB pro Paket also ca. 20 GB Lesezugriff.
 ```powershell
 .\Compare-And-Remove-Duplicates-v2.ps1 -ReferenceFolder "E:\OpenCloud" -TargetFolder "F:\Daten" -DryRun
 ```
+
+## Dubletten innerhalb von Ordnern (`Find-Duplicates.ps1`)
+
+Sucht in **einem oder mehreren Ordnern** (inkl. aller Unterordner) nach Dateien mit gleichem Inhalt
+(Größe + SHA256). Pro Dubletten-Gruppe wird **eine** Datei behalten, alle anderen werden gelöscht.
+Ablauf und Sicherheitsnetz wie bei v2: Report, doppelte Bestätigung, Pakete ≤ 10 GB mit `CONTINUE`,
+erneute Hash-Prüfung direkt vor dem Löschen, Stopp beim ersten Fehler, Papierkorb, `-DryRun`,
+leere Ordner entfernen.
+
+```powershell
+# Ein Ordner
+.\Find-Duplicates.ps1 -Path "F:\Daten" -DryRun
+
+# Mehrere Ordner zusammen (Dubletten auch ordnerübergreifend)
+.\Find-Duplicates.ps1 -Path "F:\Daten", "E:\Fotos" -DryRun
+.\Find-Duplicates.ps1 -Path "F:\Daten;E:\Fotos" -DryRun
+```
+
+| Parameter        | Standard       | Beschreibung                                                             |
+|------------------|----------------|--------------------------------------------------------------------------|
+| `-Path`          | –              | Ein oder mehrere Ordner (Liste oder mit `;` getrennt)                     |
+| `-KeepRule`      | `ShortestPath` | Welche Datei pro Gruppe bleibt: `ShortestPath` (kürzester Pfad, z. B. `Bilder` statt `Bilder - Kopie`), `Oldest`, `Newest` (nach Änderungsdatum), `Alphabetical` |
+| `-ExcludeFolder` | `.git`         | Ordnernamen, die komplett übersprungen werden. `-ExcludeFolder @()` = nichts ausschließen |
+| `-MaxBatchGB`, `-DryRun`, `-NoRecycleBin`, `-KeepEmptyFolders`, `-IncludeEmptyFiles`, `-SkipRehash`, `-LogPath` | | wie bei v2 |
+
+**Bestätigung:** (1) J/N, (2) die angezeigte Anzahl der zu löschenden Dateien eintippen.
+
+**Report** `Logs\Dubletten_<Zeit>.csv`: Spalte `Gruppe` (gleiche Nummer = gleicher Inhalt),
+`Aktion` (`Behalten` / `Loeschen`), `SHA256`, `BehalteneDatei`, `SHA256_Behalten`.
+Vor dem echten Lauf prüfen, ob pro Gruppe die richtige Datei auf `Behalten` steht – sonst `-KeepRule` ändern.
